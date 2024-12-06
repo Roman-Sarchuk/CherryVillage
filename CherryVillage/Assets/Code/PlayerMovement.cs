@@ -1,128 +1,88 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Base Movement")]
     [SerializeField] private float _runSpeed = 5f;
-    [SerializeField] private float _jumpForce = 5f;
+    [SerializeField] private float _jumpHeight = 6.5f;
 
-    private bool isGrounded;
-    [SerializeField] private GameObject _groundCheckPoint; // The object through which the isGrounded check is performed.
+    private bool _isGrounded;
+    [SerializeField] private Transform _groundCheckPoint; // The object through which the isGrounded check is performed.
     [SerializeField] private float _groundCheckRadius;
     [SerializeField] private LayerMask _groundLayer; // Layer wich the character can jump on.
 
-    [Header("Keys")]
-    [SerializeField] private bool _jumpPressed = false; // Variable that will check is "Space" key is pressed.
-    [SerializeField] private bool _APressed = false; // Variable that will check is "A" key is pressed.
-    [SerializeField] private bool _DPressed = false; // Variable that will check is "D" key is pressed.
-    [SerializeField] private bool _intoPressed = false; // Variable that will check is "W" key is pressed.
-    [SerializeField] private bool _outPressed = false; // Variable that will check is "S" key is pressed.
-
     [Header("DepthMovement")]
-    [Range(0f, 100f)]
-    [SerializeField] private float _minScalePercent = 50f;
-    [Range(100f, 200f)]
-    [SerializeField] private float _maxScalePercent = 100f;
-    [SerializeField] private float _scaleCoef = 0.1f;
-    [SerializeField] private Vector3 _scaleVector3;
-    [SerializeField] private Vector3 _initialScale;
-    [SerializeField] private Vector3 _maxScale;
-    [SerializeField] private Vector3 _minScale;
     [SerializeField] private bool _isDeapthMoving = false;
     [SerializeField] private bool _isAbleMoveInto;
     [SerializeField] private bool _isAbleMoveOut;
-    [SerializeField] private LayerMask _upZoneLayer;
-    [SerializeField] private LayerMask _downZoneLayer;
-
+    public bool IsAbleMoveInto { set { _isAbleMoveInto = value; } }
+    public bool IsAbleMoveOut { set { _isAbleMoveOut = value; } }
+    public void DeapthMovingCompleted() { _isDeapthMoving = true; }
 
     [Header("Other")]
-    [SerializeField] private SpriteRenderer _sprite; // Variable for the SpriteRenderer component.
+    [SerializeField] private GameObject _sprite; // Variable for the SpriteRenderer component.
     [SerializeField] private Sprite _jumpSprite; // Sprite that shows up when the character is not on the ground. [OPTIONAL]
     private Rigidbody2D _rb;
-    // private Animator animator; // Variable for the Animator component. [OPTIONAL]
+    [SerializeField] private Animator _animator; // Variable for the Animator component. [OPTIONAL]
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
-
-        _initialScale = transform.localScale;
-        _maxScale = _initialScale * _maxScalePercent;
-        _minScale = _initialScale * _minScalePercent;
-
-        _scaleVector3 = Vector3.zero * _scaleCoef;
+        _animator.enabled = false;
     }
 
-    private void Update()
+    void Update()
     {
-        _jumpPressed = Input.GetKeyDown(KeyCode.Space);
-        _APressed = Input.GetKey(KeyCode.A);
-        _DPressed = Input.GetKey(KeyCode.D);
-        _intoPressed = Input.GetKey(KeyCode.W);
-        _outPressed = Input.GetKey(KeyCode.S);
-    }
-
-    private void FixedUpdate()
-    {
-        if (!_isDeapthMoving)
-            BaseMovement();
+        BaseMovement();
         DepthMovement();
     }
 
     private void BaseMovement()
     {
-        isGrounded = Physics2D.OverlapCircle(_groundCheckPoint.transform.position, _groundCheckRadius, _groundLayer); // Checking if character is on the ground.
+        // Horizontal movement
+        float moveInput = Input.GetAxis("Horizontal");
+        if (moveInput > 0)
+            _sprite.transform.rotation = Quaternion.Euler(0, 0, 0);
+        else if (moveInput < 0)
+            _sprite.transform.rotation = Quaternion.Euler(0, 180, 0);
 
-        // Left/Right movement
-        if (_APressed)
-        {
-            _rb.velocity = new Vector2(-_runSpeed, _rb.velocity.y); // Move left physics.
-            _sprite.flipX = false; // Rotating the character object to the left.
-            _APressed = false; // Returning initial value.
-        }
-        else if (_DPressed)
-        {
-            _rb.velocity = new Vector2(_runSpeed, _rb.velocity.y);
-            _sprite.flipX = true; // Rotating the character object to the right.
-            _DPressed = false;
-        }
-        else _rb.velocity = new Vector2(0, _rb.velocity.y);
+        transform.position += new Vector3(moveInput * _runSpeed * Time.deltaTime, 0, 0);
 
-        // Jumps.
-        if (_jumpPressed && isGrounded)
-        {
-            _rb.velocity = new Vector2(0, _jumpForce); // Jump physics.
-            _jumpPressed = false;
-        }
+        _isGrounded = Physics2D.OverlapCircle(_groundCheckPoint.position, _groundCheckRadius, _groundLayer); // Checking if character is on the ground.
 
-        // Setting jump sprite. [OPTIONAL]
-        /*if (!isGrounded)
+        // Jump
+        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded)
         {
-            animator.enabled = false; // Turning off animation.
-            sr.sprite = jumpSprite; // Setting the sprite.
+            StartCoroutine(Jump());
         }
-        else animator.enabled = true; // Turning on animation.*/
+    }
+
+    private IEnumerator Jump()
+    {
+        float jumpVelocity = _jumpHeight;
+        while (jumpVelocity > 0)
+        {
+            transform.position += new Vector3(0, jumpVelocity * Time.deltaTime, 0);
+            jumpVelocity -= Time.deltaTime * 10f; // Gravity effect
+            yield return null;
+        }
     }
 
     private void DepthMovement()
     {
-        _isAbleMoveInto = Physics2D.OverlapCircle(_groundCheckPoint.transform.position, _groundCheckRadius, _upZoneLayer);
-        _isAbleMoveOut = Physics2D.OverlapCircle(_groundCheckPoint.transform.position, _groundCheckRadius, _downZoneLayer);
-
-        // Into/Out movement
-        if (_isAbleMoveInto && _intoPressed)
+        if (_isAbleMoveInto && Input.GetKeyDown(KeyCode.W))
         {
-            transform.localScale = transform.localScale + _scaleVector3;
-            //_rb.velocity = new Vector2(-_runSpeed, _rb.velocity.y); // Move left physics.
-            //_sprite.flipX = false; // Rotating the character object to the left.
             _isDeapthMoving = true;
+            _animator.enabled = true;
+            GameController.singleton.TransferUp();
         }
-        else if (_isAbleMoveOut && _outPressed)
+        else if (_isAbleMoveOut && Input.GetKeyDown(KeyCode.S))
         {
-            transform.localScale -= _scaleVector3;
-            //_rb.velocity = new Vector2(_runSpeed, _rb.velocity.y);
-            //_sprite.flipX = true; // Rotating the character object to the right.
             _isDeapthMoving = true;
+            _animator.enabled = true;
+            GameController.singleton.TransferDown();
         }
     }
 }

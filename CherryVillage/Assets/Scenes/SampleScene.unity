@@ -532,6 +532,7 @@ GameObject:
   m_Component:
   - component: {fileID: 340826019}
   - component: {fileID: 340826020}
+  - component: {fileID: 340826021}
   m_Layer: 0
   m_Name: DownZone
   m_TagString: DownZone
@@ -599,6 +600,18 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.5, y: 2}
   m_EdgeRadius: 0
+--- !u!114 &340826021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340826018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 612b96ea6ae7d2d43b4d4595a7aad850, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &371614151
 GameObject:
   m_ObjectHideFlags: 0
@@ -2212,7 +2225,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1485556671}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eeb053e34a906d6418cd7a0dcda72beb, type: 3}
+  m_Script: {fileID: 11500000, guid: 470b313f9004299459f34e199c813e60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1578809185
@@ -2634,15 +2647,15 @@ MonoBehaviour:
   _initialScale: {x: 0, y: 0, z: 0}
   _maxScale: {x: 0, y: 0, z: 0}
   _minScale: {x: 0, y: 0, z: 0}
-  _isDeapthMoving: 0
-  _isAbleMoveInto: 0
-  _isAbleMoveOut: 0
   _upZoneLayer:
     serializedVersion: 2
     m_Bits: 64
   _downZoneLayer:
     serializedVersion: 2
     m_Bits: 128
+  _isDeapthMoving: 0
+  _isAbleMoveInto: 0
+  _isAbleMoveOut: 0
   _sprite: {fileID: 1044611905}
   _jumpSprite: {fileID: 0}
 --- !u!61 &1777463976
