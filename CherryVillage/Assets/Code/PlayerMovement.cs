@@ -23,30 +23,37 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Other")]
     [SerializeField] private GameObject _sprite; // Variable for the SpriteRenderer component.
-    [SerializeField] private Sprite _jumpSprite; // Sprite that shows up when the character is not on the ground. [OPTIONAL]
     private Rigidbody2D _rb;
     [SerializeField] private Animator _animator; // Variable for the Animator component. [OPTIONAL]
+
+    // TEST ZONE
+    public float xVelocity;
+    public float yVelocity;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
-        _animator.enabled = false;
     }
 
     void Update()
     {
         BaseMovement();
-        DepthMovement();
+        //DepthMovement();
     }
 
     private void BaseMovement()
     {
         // Horizontal movement
         float moveInput = Input.GetAxis("Horizontal");
-        if (moveInput > 0)
+        xVelocity = moveInput;
+        // *** animation
+        _animator.SetFloat("xVelocity", moveInput);
+        _animator.SetBool("isIdle", (moveInput >= -0.1 && moveInput <= 0.1));
+        // *** animation
+        /*if (moveInput > 0)
             _sprite.transform.rotation = Quaternion.Euler(0, 0, 0);
         else if (moveInput < 0)
-            _sprite.transform.rotation = Quaternion.Euler(0, 180, 0);
+            _sprite.transform.rotation = Quaternion.Euler(0, 180, 0);*/
 
         transform.position += new Vector3(moveInput * _runSpeed * Time.deltaTime, 0, 0);
 
@@ -75,13 +82,11 @@ public class PlayerMovement : MonoBehaviour
         if (_isAbleMoveInto && Input.GetKeyDown(KeyCode.W))
         {
             _isDeapthMoving = true;
-            _animator.enabled = true;
             GameController.singleton.TransferUp();
         }
         else if (_isAbleMoveOut && Input.GetKeyDown(KeyCode.S))
         {
             _isDeapthMoving = true;
-            _animator.enabled = true;
             GameController.singleton.TransferDown();
         }
     }
